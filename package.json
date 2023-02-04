@@ -1,0 +1,8 @@
+{
+    "name": "jp.ya7gi.autoscrollview",
+    "author": "YA7GI",
+    "version": "0.5.0",
+    "displayName": "AutoScrollView",
+    "description": "Focus selected child object in ScrollView Automatically.",
+    "unity": "2021.3"
+}
