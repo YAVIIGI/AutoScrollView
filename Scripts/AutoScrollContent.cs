@@ -47,7 +47,7 @@ namespace YA7GI
                     default:
                         eType = (1 - rate);
                         break;
-                    
+
                 }
                 transform.parent.GetComponent<RectTransform>().anchoredPosition = Vector2.Lerp(currentPos, nextPos, eType / moveSecond);
                 yield return new WaitForFixedUpdate();
@@ -63,10 +63,10 @@ namespace YA7GI
             {
                 if (preSelectedObject != selectedObject)
                 {
-                    float diff = GetDistanceSelectedChild();
-                    if (diff > 1.0f || diff < -1.0f)
+                    Vector2 diff = GetDistanceSelectedChild();
+                    if (diff.magnitude > 1.0f || diff.magnitude < -1.0f)
                     {
-                        nextPos = transform.parent.GetComponent<RectTransform>().anchoredPosition + new Vector2(0, diff);
+                        nextPos = transform.parent.GetComponent<RectTransform>().anchoredPosition + diff;
                         // transform.parent.GetComponent<RectTransform>().anchoredPosition = nextPos;
                         StartCoroutine(EMovePosition());
                     }
@@ -87,32 +87,45 @@ namespace YA7GI
             return null;
         }
 
-        float GetDistanceSelectedChild()
+        Vector2 GetDistanceSelectedChild()
         {
             GameObject go = GetContainedSelectedChild();
             if (go)
             {
-                return IsContainedCompletely(go);
+                return CheckContainedCompletely(go);
             }
-            return 0.0f;
+            return Vector2.zero;
         }
 
-        float IsContainedCompletely(GameObject target)
+        Vector2 CheckContainedCompletely(GameObject target)
         {
-            Vector2 mPos = transform.parent.GetComponent<RectTransform>().anchoredPosition;
-            Vector2 pPos = transform.parent.parent.GetComponent<RectTransform>().anchoredPosition;
-            Vector2 tPos = target.GetComponent<RectTransform>().anchoredPosition;
-            Rect pRect = transform.parent.parent.GetComponent<RectTransform>().rect;
-            Rect tRect = target.GetComponent<RectTransform>().rect;
-            if (tRect.height + tRect.y + (-tPos.y) - mPos.y > pRect.height - margin)
+            Vector2 cPos = transform.parent.GetComponent<RectTransform>().anchoredPosition;         // content
+            Vector2 vPos = transform.parent.parent.GetComponent<RectTransform>().anchoredPosition;  // viewport
+            Vector2 sPos = target.GetComponent<RectTransform>().anchoredPosition;                   // selected child
+            Rect vRect = transform.parent.parent.GetComponent<RectTransform>().rect;
+            Rect sRect = target.GetComponent<RectTransform>().rect;
+
+            float x = 0, y = 0;
+
+            if (sPos.x + sRect.x + sRect.width + cPos.x > vRect.width - margin)
             {
-                return (tRect.height + tRect.y + (-tPos.y) - mPos.y) - pRect.height + margin;
+                x = -(sPos.x + sRect.x + sRect.width + cPos.x - (vRect.width - margin));
             }
-            else if (tRect.y + (-tPos.y) - mPos.y < margin)
+            else if (sPos.x + sRect.x + cPos.x < margin)
             {
-                return tRect.y + (-tPos.y) - mPos.y - margin;
+                x = -(sPos.x + sRect.x + cPos.x - (margin));
             }
-            return 0.0f;
+
+            if (sRect.height + sRect.y + (-sPos.y) - cPos.y > vRect.height - margin)
+            {
+                y = (sRect.height + sRect.y + (-sPos.y) - cPos.y) - vRect.height + margin;
+            }
+            else if (sRect.y + (-sPos.y) - cPos.y < margin)
+            {
+                y = sRect.y + (-sPos.y) - cPos.y - margin;
+            }
+
+            return new Vector2(x, y);
         }
 
         List<GameObject> GetChildren()
