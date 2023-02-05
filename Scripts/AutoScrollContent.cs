@@ -9,7 +9,9 @@ namespace YA7GI
     public class AutoScrollContent : MonoBehaviour
     {
         [SerializeField]
-        float margin = 10.0f;
+        float verticalMargin = 10.0f;
+        [SerializeField]
+        float horizontalMargin = 10.0f;
 
         [Range(0.01f, 1.0f)]
         [SerializeField]
@@ -24,6 +26,26 @@ namespace YA7GI
         GameObject preSelectedObject;
         void Start()
         {
+            AdjustContentSize();
+        }
+
+        void AdjustContentSize()
+        {
+            float minx = 0, miny = 0, maxx = 0, maxy = 0;
+            foreach (var g in GetChildren())
+            {
+                var tr = g.GetComponent<RectTransform>();
+                float l = tr.anchoredPosition.x + (tr.rect.x) - horizontalMargin;
+                float r = tr.anchoredPosition.x + (-tr.rect.x) + horizontalMargin;
+                float u = tr.anchoredPosition.y + (tr.rect.y) - verticalMargin;
+                float d = tr.anchoredPosition.y + (-tr.rect.y) + verticalMargin;
+                if (minx > l) minx = l;
+                if (maxx < r) maxx = r;
+                if (miny > u) miny = u;
+                if (maxy < d) maxy = d;
+            }
+
+            transform.parent.GetComponent<RectTransform>().sizeDelta = new Vector2(maxx - minx, maxy - miny);
         }
 
         IEnumerator EMovePosition()
@@ -107,22 +129,22 @@ namespace YA7GI
 
             float x = 0, y = 0;
 
-            if (sPos.x + sRect.x + sRect.width + cPos.x > vRect.width - margin)
+            if (sPos.x + sRect.x + sRect.width + cPos.x > vRect.width - horizontalMargin)
             {
-                x = -(sPos.x + sRect.x + sRect.width + cPos.x - (vRect.width - margin));
+                x = -(sPos.x + sRect.x + sRect.width + cPos.x - (vRect.width - horizontalMargin));
             }
-            else if (sPos.x + sRect.x + cPos.x < margin)
+            else if (sPos.x + sRect.x + cPos.x < horizontalMargin)
             {
-                x = -(sPos.x + sRect.x + cPos.x - (margin));
+                x = -(sPos.x + sRect.x + cPos.x - (horizontalMargin));
             }
 
-            if (sRect.height + sRect.y + (-sPos.y) - cPos.y > vRect.height - margin)
+            if (sRect.height + sRect.y + (-sPos.y) - cPos.y > vRect.height - verticalMargin)
             {
-                y = (sRect.height + sRect.y + (-sPos.y) - cPos.y) - vRect.height + margin;
+                y = (sRect.height + sRect.y + (-sPos.y) - cPos.y) - vRect.height + verticalMargin;
             }
-            else if (sRect.y + (-sPos.y) - cPos.y < margin)
+            else if (sRect.y + (-sPos.y) - cPos.y < verticalMargin)
             {
-                y = sRect.y + (-sPos.y) - cPos.y - margin;
+                y = sRect.y + (-sPos.y) - cPos.y - verticalMargin;
             }
 
             return new Vector2(x, y);
